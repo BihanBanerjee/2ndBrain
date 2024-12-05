@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement()) // Primary key with auto-increment
+  username    String   @unique                      // Unique username
+  email       String   @unique                      // Unique email
+  password    String                              // Password field
+  profilePic  String?
+  content     Content[]                           // One-to-many relation with Content
+  links       Link?                               // One-to-one relation with Link
+}
+
+model Content {
+  id      Int     @id @default(autoincrement()) // Primary key with auto-increment
+  title   String                              // Title of the content
+  link    String?                             // Optional link field
+  image   String?
+  tags    Tag[]   @relation("ContentTags")    // Many-to-many relation with Tag
+  type    String                              // Type of the content
+  userId  Int                                 // Foreign key for User
+  user    User    @relation(fields: [userId], references: [id]) // Relation with User
+}
+
+model Link {
+  id     Int    @id @default(autoincrement()) // Primary key with auto-increment
+  hash   String @unique                             // Hash field
+  userId Int    @unique                     // Foreign key for User (with unique constraint)
+  user   User   @relation(fields: [userId], references: [id]) // One-to-one relation with User
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement()) // Primary key with auto-increment
+  name     String    @unique                      // Unique tag name
+  contents Content[] @relation("ContentTags")     // Many-to-many relation with Content
+}
